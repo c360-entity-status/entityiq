@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>EntityIQ — US Company Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --ink: #0d0e12;
+  --paper: #f5f2ec;
+  --paper2: #ede9e1;
+  --paper3: #e4dfd5;
+  --rule: #c9c3b5;
+  --rule-light: #ddd8ce;
+  --navy: #152340;
+  --navy2: #1e3460;
+  --gold: #b8860b;
+  --gold2: #d4a017;
+  --green: #1a5c2e;
+  --red: #8b1a1a;
+  --amber: #9a6200;
+  --muted: #6b6559;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'IBM Plex Sans', sans-serif;
+  --display: 'Playfair Display', serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; scroll-behavior: smooth; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--mono);
+  min-height: 100vh;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 27px, rgba(0,0,0,0.018) 27px, rgba(0,0,0,0.018) 28px);
+}
+
+/* ── GATE ── */
+#gate {
+  position: fixed; inset: 0; z-index: 999;
+  background: var(--navy);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 32px;
+  background-image: radial-gradient(ellipse at 60% 40%, rgba(180,134,11,0.08) 0%, transparent 60%);
+}
+.gate-logo {
+  text-align: center;
+}
+.gate-logo-text {
+  font-family: var(--display);
+  font-size: 3rem; font-weight: 900;
+  color: #f5f2ec; letter-spacing: -0.03em; line-height: 1;
+}
+.gate-logo-text span { color: var(--gold2); }
+.gate-tagline {
+  font-family: var(--mono); font-size: 0.6rem;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: #566; margin-top: 8px;
+}
+.gate-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 36px 44px; min-width: 340px;
+  display: flex; flex-direction: column; gap: 20px;
+}
+.gate-lbl {
+  font-size: 0.58rem; letter-spacing: 0.18em;
+  text-transform: uppercase; color: #778; margin-bottom: 6px;
+}
+.gate-inp {
+  width: 100%; background: transparent;
+  border: none; border-bottom: 1px solid #334;
+  color: #f5f2ec; font-family: var(--mono);
+  font-size: 1rem; padding: 8px 0; outline: none;
+  letter-spacing: 0.08em;
+  transition: border-color .2s;
+}
+.gate-inp:focus { border-bottom-color: var(--gold2); }
+.gate-btn {
+  background: var(--gold); color: var(--navy);
+  border: none; font-family: var(--mono);
+  font-size: 0.65rem; letter-spacing: 0.18em;
+  text-transform: uppercase; padding: 13px 20px;
+  cursor: pointer; transition: background .15s; margin-top: 4px;
+}
+.gate-btn:hover { background: var(--gold2); }
+.gate-err { font-size: 0.62rem; color: #e06060; min-height: 16px; letter-spacing: 0.05em; }
+.gate-hint { font-size: 0.58rem; color: #445; text-align: center; letter-spacing: 0.06em; }
+
+/* ── APP ── */
+#app { display: none; flex-direction: column; min-height: 100vh; }
+#app.on { display: flex; }
+
+/* ── MASTHEAD ── */
+.mast {
+  border-bottom: 2px solid var(--navy);
+  background: var(--navy);
+  color: #f5f2ec;
+}
+.mast-top {
+  display: flex; align-items: center;
+  justify-content: space-between;
+  padding: 12px 44px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.mast-brand {
+  font-family: var(--display);
+  font-size: 1.9rem; font-weight: 900;
+  letter-spacing: -0.03em; line-height: 1;
+  color: #f5f2ec;
+}
+.mast-brand em { color: var(--gold2); font-style: normal; }
+.mast-right {
+  text-align: right;
+  font-size: 0.58rem; letter-spacing: 0.1em;
+  text-transform: uppercase; color: #566; line-height: 1.9;
+}
+.mast-bar {
+  display: flex; align-items: center; gap: 0;
+  padding: 0 44px; overflow-x: auto;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.mast-item {
+  font-size: 0.58rem; color: #556; letter-spacing: 0.1em;
+  padding: 7px 14px 7px 0; white-space: nowrap;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  margin-right: 14px;
+}
+.mast-item:last-child { border-right: none; }
+
+/* ── SEARCH ── */
+.search-band {
+  padding: 18px 44px;
+  background: var(--paper2);
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: flex-end; gap: 14px;
+}
+.sf { flex: 1; }
+.sf label {
+  display: block; font-size: 0.57rem;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 6px;
+}
+.sf input {
+  width: 100%; background: transparent;
+  border: none; border-bottom: 2px solid var(--navy);
+  font-family: var(--mono); font-size: 1.05rem;
+  color: var(--ink); padding: 6px 0; outline: none;
+  transition: border-color .2s;
+}
+.sf input::placeholder { color: var(--rule); }
+.sf input:focus { border-bottom-color: var(--gold); }
+.go-btn {
+  background: var(--navy); color: var(--paper);
+  border: none; font-family: var(--mono);
+  font-size: 0.62rem; letter-spacing: 0.16em;
+  text-transform: uppercase; padding: 11px 26px;
+  cursor: pointer; white-space: nowrap; height: 40px;
+  transition: background .15s;
+}
+.go-btn:hover { background: var(--gold); }
+.go-btn:disabled { background: var(--rule); cursor: not-allowed; }
+
+/* ── SOURCE RAIL ── */
+.src-rail {
+  display: flex; border-bottom: 1px solid var(--rule);
+  overflow-x: auto; background: white;
+}
+.src {
+  display: flex; align-items: center; gap: 5px;
+  padding: 7px 14px; font-size: 0.56rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: var(--muted); white-space: nowrap;
+  border-right: 1px solid var(--rule-light);
+  transition: color .3s;
+}
+.src-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--rule); flex-shrink: 0;
+  transition: all .4s;
+}
+.src.pinging .src-dot { background: var(--gold); box-shadow: 0 0 5px var(--gold); animation: pulse 1s infinite; }
+.src.hit .src-dot { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.src.hit { color: var(--green); }
+.src.miss .src-dot { background: var(--rule); }
+.src.err .src-dot { background: var(--red); }
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+
+/* ── STATUS ── */
+.status {
+  padding: 6px 44px; font-size: 0.6rem; color: var(--muted);
+  letter-spacing: 0.05em; border-bottom: 1px solid var(--rule-light);
+  min-height: 28px; display: flex; align-items: center; gap: 8px;
+  background: var(--paper);
+}
+.s-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--rule); flex-shrink: 0;
+}
+.s-dot.live { background: var(--gold); animation: pulse 1s infinite; }
+.s-dot.done { background: var(--green); }
+
+/* ── SUMMARY ── */
+#summary {
+  display: none; background: var(--navy);
+  padding: 14px 44px; gap: 40px;
+  align-items: center; flex-wrap: wrap;
+  border-bottom: 2px solid var(--gold);
+}
+#summary.on { display: flex; }
+.sum-i { display: flex; flex-direction: column; gap: 2px; }
+.sum-l { font-size: 0.54rem; letter-spacing: 0.14em; text-transform: uppercase; color: #556; }
+.sum-v { font-family: var(--display); font-size: 0.95rem; font-weight: 700; color: #f5f2ec; }
+.sum-v.gold { color: var(--gold2); font-size: 1.1rem; }
+
+/* ── EXPORT ── */
+#export-bar {
+  display: none; padding: 8px 44px; gap: 10px;
+  align-items: center; border-bottom: 1px solid var(--rule);
+  background: var(--paper2);
+}
+#export-bar.on { display: flex; }
+.exp-lbl { font-size: 0.57rem; color: var(--muted); letter-spacing: 0.1em; margin-right: 2px; }
+.exp-btn {
+  font-family: var(--mono); font-size: 0.58rem;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 6px 12px; border: 1px solid var(--rule);
+  background: transparent; cursor: pointer; color: var(--muted);
+  transition: all .15s;
+}
+.exp-btn:hover { border-color: var(--navy); color: var(--navy); }
+
+/* ── GRID ── */
+#grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0; flex: 1;
+}
+
+/* ── IDLE ── */
+#idle {
+  grid-column: 1/-1;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 44px; gap: 14px;
+}
+.idle-q {
+  font-family: var(--display); font-size: 1.5rem;
+  color: var(--rule); text-align: center; max-width: 480px; line-height: 1.5;
+  font-style: italic;
+}
+.idle-s {
+  font-size: 0.6rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--rule-light);
+}
+
+/* ── VARIABLE CARD ── */
+.vc {
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  animation: fadeUp .35s ease both;
+}
+.vc:nth-child(even) { border-right: none; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.vc-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px; cursor: pointer;
+  border-bottom: 1px solid var(--rule-light);
+  background: var(--paper2); user-select: none;
+  transition: background .15s;
+}
+.vc-head:hover { background: var(--paper3); }
+
+.vc-num { font-size: 0.52rem; color: var(--rule); letter-spacing: 0.1em; flex-shrink: 0; }
+.vc-lbl {
+  font-size: 0.6rem; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--navy); font-weight: 600;
+  white-space: nowrap; flex-shrink: 0;
+}
+.vc-val {
+  flex: 1; font-size: 0.82rem; color: var(--ink);
+  text-align: right; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+  padding-left: 8px;
+}
+.vc-val.empty { color: var(--muted); font-style: italic; font-size: 0.72rem; }
+.vc-val.loading { color: var(--gold); }
+
+.conf {
+  font-size: 0.5rem; padding: 2px 6px; border: 1px solid;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  white-space: nowrap; flex-shrink: 0;
+}
+.conf-H { color: var(--green); border-color: var(--green); }
+.conf-M { color: var(--amber); border-color: var(--amber); }
+.conf-N { color: var(--muted); border-color: var(--rule); }
+
+.chev { font-size: 0.55rem; color: var(--muted); transition: transform .2s; flex-shrink: 0; }
+.chev.open { transform: rotate(180deg); }
+
+/* ── DETAIL PANEL ── */
+.vc-detail {
+  display: none; flex-direction: column; gap: 8px;
+  padding: 14px 18px; background: white;
+  border-top: 1px solid var(--rule-light);
+  animation: fadeUp .2s ease;
+}
+.vc-detail.open { display: flex; }
+
+.dr { display: flex; gap: 10px; font-size: 0.65rem; align-items: flex-start; }
+.dl {
+  color: var(--muted); width: 108px; flex-shrink: 0;
+  font-size: 0.56rem; letter-spacing: 0.1em;
+  text-transform: uppercase; padding-top: 1px; line-height: 1.5;
+}
+.dv { color: var(--ink); flex: 1; line-height: 1.6; word-break: break-word; }
+.dv a { color: var(--navy2); text-decoration: none; }
+.dv a:hover { text-decoration: underline; }
+
+.tag {
+  display: inline-block; font-size: 0.54rem; padding: 2px 6px;
+  border: 1px solid; margin: 2px 2px 2px 0; letter-spacing: 0.06em;
+}
+.tag-amber { color: var(--amber); border-color: rgba(154,98,0,.3); background: rgba(154,98,0,.06); }
+.tag-green { color: var(--green); border-color: rgba(26,92,46,.3); background: rgba(26,92,46,.06); }
+.tag-red   { color: var(--red);   border-color: rgba(139,26,26,.3); background: rgba(139,26,26,.06); }
+.tag-blue  { color: var(--navy2); border-color: rgba(30,52,96,.3); background: rgba(30,52,96,.06); }
+
+.rules-row {
+  font-size: 0.55rem; color: var(--muted); padding-top: 8px;
+  border-top: 1px solid var(--rule-light); line-height: 1.6; letter-spacing: 0.04em;
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 10px 44px; display: flex;
+  justify-content: space-between; font-size: 0.56rem;
+  color: var(--muted); letter-spacing: 0.06em;
+  border-top: 1px solid var(--rule); flex-wrap: wrap; gap: 6px;
+  background: var(--paper2);
+}
+
+@media (max-width: 720px) {
+  #grid { grid-template-columns: 1fr; }
+  .vc:nth-child(even) { border-right: 1px solid var(--rule); }
+  .mast-top, .search-band, .status, #summary, #export-bar, footer { padding-left: 18px; padding-right: 18px; }
+  .mast-bar { padding-left: 18px; }
+  .search-band { flex-direction: column; align-items: stretch; }
+  .go-btn { height: auto; padding: 11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<div id="gate">
+  <div class="gate-logo">
+    <div class="gate-logo-text">Entity<span>IQ</span></div>
+    <div class="gate-tagline">US Company Intelligence · 7 Variables · 136 Rules</div>
+  </div>
+  <div class="gate-card">
+    <div>
+      <div class="gate-lbl">Access Code</div>
+      <input id="gpw" class="gate-inp" type="password" placeholder="••••••••••" autocomplete="off"/>
+    </div>
+    <div class="gate-err" id="gerr"></div>
+    <button class="gate-btn" onclick="unlock()">Enter Platform →</button>
+  </div>
+  <div class="gate-hint">Default code: entityiq2024 · Change CONFIG.ACCESS_CODE in source</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+
+  <div class="mast">
+    <div class="mast-top">
+      <div class="mast-brand">Entity<em>IQ</em></div>
+      <div class="mast-right">
+        US Company Intelligence Platform<br/>
+        136 Rules &nbsp;·&nbsp; 9 Sources &nbsp;·&nbsp; 7 Variables
+      </div>
+    </div>
+    <div class="mast-bar">
+      <div class="mast-item">SEC EDGAR</div>
+      <div class="mast-item">OpenCorporates</div>
+      <div class="mast-item">SAM.gov</div>
+      <div class="mast-item">ProPublica / IRS 990</div>
+      <div class="mast-item">FDIC BankFind</div>
+      <div class="mast-item">NPPES / NPI</div>
+      <div class="mast-item">NCUA</div>
+      <div class="mast-item">USASpending.gov</div>
+      <div class="mast-item">Census NAICS</div>
+    </div>
+  </div>
+
+  <div class="search-band">
+    <div class="sf">
+      <label for="q">Company Name · Trade Name · Ticker · Partial Name</label>
+      <input id="q" type="text" placeholder='Try "Hilton", "Red Cross", "Chase Bank", "Koch Industries"…' autocomplete="off"/>
+    </div>
+    <button class="go-btn" id="gobtn" onclick="run()">Run Intelligence →</button>
+  </div>
+
+  <div class="src-rail">
+    <div class="src" id="s-edgar"><span class="src-dot"></span>EDGAR</div>
+    <div class="src" id="s-oc"><span class="src-dot"></span>OpenCorp</div>
+    <div class="src" id="s-sam"><span class="src-dot"></span>SAM.gov</div>
+    <div class="src" id="s-pp"><span class="src-dot"></span>ProPublica</div>
+    <div class="src" id="s-fdic"><span class="src-dot"></span>FDIC</div>
+    <div class="src" id="s-nppes"><span class="src-dot"></span>NPPES</div>
+    <div class="src" id="s-ncua"><span class="src-dot"></span>NCUA</div>
+    <div class="src" id="s-spend"><span class="src-dot"></span>USASpending</div>
+  </div>
+
+  <div class="status">
+    <div class="s-dot" id="sdot"></div>
+    <span id="stxt">Enter a company name above to begin.</span>
+  </div>
+
+  <div id="summary">
+    <div class="sum-i"><div class="sum-l">Legal Entity</div><div class="sum-v gold" id="sname">—</div></div>
+    <div class="sum-i"><div class="sum-l">Type</div><div class="sum-v" id="stype">—</div></div>
+    <div class="sum-i"><div class="sum-l">Status</div><div class="sum-v" id="sstatus">—</div></div>
+    <div class="sum-i"><div class="sum-l">Sources Hit</div><div class="sum-v" id="ssrc">—</div></div>
+    <div class="sum-i"><div class="sum-l">Data Coverage</div><div class="sum-v" id="scov">—</div></div>
+  </div>
+
+  <div id="export-bar">
+    <span class="exp-lbl">Export:</span>
+    <button class="exp-btn" onclick="expJSON()">JSON</button>
+    <button class="exp-btn" onclick="expCSV()">CSV</button>
+    <button class="exp-btn" onclick="expTXT()">Report</button>
+  </div>
+
+  <div id="grid">
+    <div id="idle" style="grid-column:1/-1">
+      <div class="idle-q">"Know the entity before you engage it."</div>
+      <div class="idle-s">7 variables · 136 rules · 9 free public sources</div>
+    </div>
+  </div>
+
+  <footer>
+    <span>EntityIQ — All data from free public sources. Informational use only.</span>
+    <span id="ft">Session active</span>
+  </footer>
+
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════
+   CONFIG
+══════════════════════════════════════════════════ */
+const CFG = {
+  ACCESS_CODE: 'entityiq2024',
+  MAX_SEARCHES: 100,
+  // CORS proxy — routes browser requests through a server to bypass CORS
+  // allorigins is free and reliable; corsproxy.io is the backup
+  PROXY: 'https://api.allorigins.win/get?url=',
+  PROXY2: 'https://corsproxy.io/?',
+};
+
+/* ══════════════════════════════════════════════════
+   KNOWN REGISTERED AGENT ADDRESSES
+══════════════════════════════════════════════════ */
+const REG_AGENTS = [
+  '1209 orange','251 little falls','160 greentree','874 walker rd',
+  '2711 centerville','1013 centre rd','corporation trust',
+  'ct corporation','corporation service','national registered',
+  'cogency global','registered agents inc','united agent'
+];
+const isAgent = a => a && REG_AGENTS.some(r => a.toLowerCase().includes(r));
+
+/* ══════════════════════════════════════════════════
+   GATE
+══════════════════════════════════════════════════ */
+let searches = 0, lastResult = null;
+
+function unlock() {
+  const pw = _('gpw').value.trim();
+  if (!pw) { _('gerr').textContent = 'Enter access code.'; return; }
+  if (pw === CFG.ACCESS_CODE) {
+    _('gate').style.display = 'none';
+    _('app').classList.add('on');
+    tick();
+  } else {
+    _('gerr').textContent = 'Invalid code.';
+    _('gpw').value = '';
+    setTimeout(() => _('gerr').textContent = '', 3000);
+  }
+}
+function tick() {
+  _('ft').textContent = `Session · Searches: ${searches}/${CFG.MAX_SEARCHES}`;
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (_('gate').style.display !== 'none') unlock();
+    else run();
+  }
+});
+
+/* ══════════════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════════════ */
+const _ = id => document.getElementById(id);
+const enc = s => encodeURIComponent((s||'').trim());
+const esc = s => String(s||'').replace(/[&<>"']/g, c =>
+  ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function setSrc(id, state) {
+  const el = _('s-'+id);
+  if (el) el.className = 'src ' + state;
+}
+function setStatus(msg, state='') {
+  _('stxt').textContent = msg;
+  _('sdot').className = 's-dot' + (state ? ' '+state : '');
+}
+
+/* ══════════════════════════════════════════════════
+   FETCH WITH CORS PROXY
+   Tries allorigins first, falls back to corsproxy.io
+══════════════════════════════════════════════════ */
+async function proxyfetch(url) {
+  // Try allorigins
+  try {
+    const res = await fetch(
+      CFG.PROXY + encodeURIComponent(url),
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (res.ok) {
+      const wrapper = await res.json();
+      if (wrapper.contents) {
+        const data = JSON.parse(wrapper.contents);
+        return { ok: true, data };
+      }
+    }
+  } catch(e) {}
+
+  // Fallback: corsproxy.io
+  try {
+    const res = await fetch(
+      CFG.PROXY2 + encodeURIComponent(url),
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (res.ok) {
+      const data = await res.json();
+      return { ok: true, data };
+    }
+  } catch(e) {}
+
+  return { ok: false };
+}
+
+/* ══════════════════════════════════════════════════
+   SOURCE 1 — SEC EDGAR
+══════════════════════════════════════════════════ */
+async function fetchEDGAR(q) {
+  setSrc('edgar','pinging');
+  const R = { legalName:null, ein:null, hqAddr:null, mailAddr:null,
+    sic:null, sicDesc:null, entityType:null, ticker:null,
+    exchange:null, state:null, cik:null, formerNames:[], url:null };
+
+  // Search submissions
+  const r1 = await proxyfetch(
+    `https://efts.sec.gov/LATEST/search-index?q=${enc(q)}&forms=10-K,20-F&hits.hits._source=entity_name,file_date`
+  );
+
+  let cik = null;
+  if (r1.ok && r1.data?.hits?.hits?.length) {
+    const hit = r1.data.hits.hits[0];
+    R.legalName = hit._source?.entity_name;
+    const m = (hit._id||'').match(/(\d{10})/);
+    if (m) cik = m[1];
+  }
+
+  // If no CIK, try company search endpoint
+  if (!cik) {
+    const r2 = await proxyfetch(
+      `https://efts.sec.gov/LATEST/search-index?q=${enc(q)}&forms=10-K`
+    );
+    if (r2.ok && r2.data?.hits?.hits?.length) {
+      const hit = r2.data.hits.hits[0];
+      R.legalName = R.legalName || hit._source?.entity_name;
+      const m = (hit._id||'').match(/(\d{10})/);
+      if (m) cik = m[1];
+    }
+  }
+
+  // Get full submissions JSON
+  if (cik) {
+    R.cik = cik;
+    const r3 = await proxyfetch(`https://data.sec.gov/submissions/CIK${cik}.json`);
+    if (r3.ok && r3.data) {
+      const d = r3.data;
+      R.legalName   = R.legalName || d.name;
+      R.ein         = d.ein || null;
+      R.sic         = d.sic || null;
+      R.sicDesc     = d.sicDescription || null;
+      R.entityType  = d.entityType || null;
+      R.ticker      = d.tickers?.[0] || null;
+      R.exchange    = d.exchanges?.[0] || null;
+      R.state       = d.stateOfIncorporation || null;
+      if (d.addresses?.business) {
+        const b = d.addresses.business;
+        R.hqAddr = [b.street1, b.street2, b.city, b.stateOrCountry, b.zipCode].filter(Boolean).join(', ');
+      }
+      if (d.addresses?.mailing) {
+        const m = d.addresses.mailing;
+        R.mailAddr = [m.street1, m.city, m.stateOrCountry, m.zipCode].filter(Boolean).join(', ');
+      }
+      if (d.formerNames?.length)
+        R.formerNames = d.formerNames.map(f => ({ name: f.name, date: f.date }));
+      R.url = `https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=${cik}&type=10-K`;
+    }
+  }
+
+  setSrc('edgar', R.legalName ? 'hit' : 'miss');
+  return R;
+}
+
+/* ══════════════════════════════════════════════════
+   SOURCE 2 — OpenCorporates
+══════════════════════════════════════════════════ */
+async function fetchOC(q) {
+  setSrc('oc','pinging');
+  const R = { legalName:null, companyType:null, jurisdiction:null,
+    status:null, incDate:null, regAddr:null, companyNum:null,
+    altNames:[], url:null };
+
+  const r = await proxyfetch(
+    `https://api.opencorporates.com/v0.4/companies/search?q=${enc(q)}&jurisdiction_code=us&per_page=5`
+  );
+
+  let companies = [];
+  if (r.ok && r.data?.results?.companies?.length) {
+    companies = r.data.results.companies.map(c => c.company).filter(Boolean);
+  } else {
+    // Try without US filter
+    const r2 = await proxyfetch(
+      `https://api.opencorporates.com/v0.4/companies/search?q=${enc(q)}&per_page=8`
+    );
+    if (r2.ok && r2.data?.results?.companies?.length) {
+      companies = r2.data.results.companies
+        .map(c => c.company)
+        .filter(c => c?.jurisdiction_code?.startsWith('us'));
+    }
+  }
+
+  if (companies.length) {
+    const c = companies[0];
+    R.legalName    = c.name;
+    R.companyType  = c.company_type;
+    R.jurisdiction = c.jurisdiction_code?.replace('us_','').toUpperCase();
+    R.status       = c.current_status;
+    R.incDate      = c.incorporation_date;
+    R.regAddr      = c.registered_address_in_full || c.registered_address?.street_address;
+    R.companyNum   = c.company_number;
+    R.url          = c.opencorporates_url;
+    R.altNames     = [...new Set(
+      companies.flatMap(co => (co.alternative_names||[]).map(a => a.company_name||a)).filter(Boolean)
+    )];
+  }
+
+  setSrc('oc', R.legalName ? 'hit' : 'miss');
+  return R;
+}
+
+/* ══════════════════════════════════════════════════
+   SOURCE 3 — SAM.gov
+══════════════════════════════════════════════════ */
+async function fetchSAM(q) {
+  setSrc('sam','pinging');
+  const R = { legalName:null, dbaName:null, uei:null, entityType:null,
+    physAddr:null, mailAddr:null, naicsCode:null, status:null };
+
+  const r = await proxyfetch(
+    `https://api.sam.gov/entity-information/v3/entities?entityName=${enc(q)}&api_key=DEMO_KEY&registrationStatus=A&includeSections=entityRegistration,coreData`
+  );
+
+  if (r.ok && r.data?.entityData?.length) {
+    const e   = r.data.entityData[0];
+    const reg = e.entityRegistration || {};
+    const core= e.coreData || {};
+    const pa  = core.physicalAddress || {};
+    const ma  = core.mailingAddress  || {};
+
+    R.legalName  = reg.legalBusinessName;
+    R.dbaName    = reg.dbaName || null;
+    R.uei        = reg.ueiSAM;
+    R.entityType = reg.entityType;
+    R.status     = reg.registrationStatus;
+    R.naicsCode  = core.businessTypes?.naicsCode?.[0]?.naicsCode || null;
+    R.physAddr   = [pa.addressLine1, pa.city, pa.stateOrProvinceCode, pa.zipCode].filter(Boolean).join(', ');
+    R.mailAddr   = [ma.addressLine1, ma.city, ma.stateOrProvinceCode, ma.zipCode].filter(Boolean).join(', ');
+  }
+
+  setSrc('sam', R.legalName ? 'hit' : 'miss');
+  return R;
+}
+
+/* ══════════════════════════════════════════════════
+   SOURCE 4 — ProPublica / IRS Form 990
+══════════════════════════════════════════════════ */
+async function fetchPP(q) {
+  setSrc('pp','pinging');
+  const R = { legalName:null, dbaName:null, ein:null, nteeCode:null,
+    subsection:null, address:null, city:null, state:null,
+    totalRevenue:null, filingYear:null, url:null };
+
+  const r = await proxyfetch(
+    `https://projects.propublica.org/nonprofits/api/v2/search.json?q=${enc(q)}&per_page=3`
+  );
+
+  if (r.ok && r.data?.organizations?.length) {
+    const o   = r.data.organizations[0];
+    R.legalName   = o.name;
+    R.dbaName     = o.doing_business_as_name || null;
+    R.ein         = o.ein;
+    R.nteeCode    = o.ntee_code;
+    R.subsection  = o.subsection;
+    R.address     = o.address;
+    R.city        = o.city;
+    R.state       = o.state;
+    R.url         = `https://projects.propublica.org/nonprofits/organizations/${o.ein}`;
+
+    if (o.ein) {
+      const r2 = await proxyfetch(
+        `https://projects.propublica.org/nonprofits/api/v2/organizations/${o.ein}.json`
+      );
+      if (r2.ok && r2.data?.filings_with_data?.length) {
+        const f = r2.data.filings_with_data[0];
+        R.totalRevenue = f.totrevnue || f.totrevenue || null;
+        R.filingYear   = f.tax_prd_yr || null;
+      }
+    }
+  }
+
+  setSrc('pp', R.legalName ? 'hit' : 'miss');
+  return R;
+}
+
+/* ══════════════════════════════════════════════════
+   SOURCE 5 — FDIC
+══════════════════════════════════════════════════ */
+async function fetchFDIC(q) {
+  setSrc('fdic','pinging');
+  const R = { legalName:null, address:null, city:null, state:null,
+    zip:null, cert:null, active:null, branches:null, assets:null };
+
+  const r = await proxyfetch(
+    `https://banks.data.fdic.gov/api/institutions?filters=NAME%3A${enc(q)}&fields=NAME,ADDRESS,CITY,STNAME,ZIP,CERT,ACTIVE,OFFICES,ASSET&limit=3&sort_by=ASSET&sort_order=DESC&output=json`
+  );
+
+  if (r.ok && r.data?.data?.length) {
+    const d    = r.data.data[0]?.data;
+    if (d) {
+      R.legalName = d.NAME;
+      R.address   = d.ADDRESS;
+      R.city      = d.CITY;
+      R.state     = d.STNAME;
+      R.zip       = d.ZIP;
+      R.cert      = d.CERT;
+      R.active    = d.ACTIVE === 1;
+      R.branches  = d.OFFICES;
+      R.assets    = d.ASSET;
+    }
+  }
+
+  setSrc('fdic', R.legalName ? 'hit' : 'miss');
+  return R;
+}
+
+/* ══════════════════════════════════════════════════
+   SOURCE 6 — NPPES / NPI Registry
+══════════════════════════════════════════════════ */
+async function fetchNPPES(q) {
+  setSrc('nppes','pinging');
+  const R = { legalName:null, npi:null, address:null,
+    city:null, state:null, phone:null, taxonomy:null };
+
+  const r = await proxyfetch(
+    `https://npiregistry.cms.hhs.gov/api/?organization_name=${enc(q)}&enumeration_type=NPI-2&limit=3&version=2.1`
+  );
+
+  if (r.ok && r.data?.results?.length) {
+    const res   = r.data.results[0];
+    const basic = res.basic || {};
+    const addr  = (res.addresses||[]).find(a => a.address_purpose === 'LOCATION') || res.addresses?.[0] || {};
+    R.legalName  = basic.organization_name || basic.authorized_official_organization_name;
+    R.npi        = res.number;
+    R.address    = [addr.address_1, addr.city, addr.state, addr.postal_code].filter(Boolean).join(', ');
+    R.city       = addr.city;
+    R.state      = addr.state;
+    R.phone      = addr.telephone_number;
+    R.taxonomy   = (res.taxonomies||[])[0]?.desc;
+  }
+
+  setSrc('nppes', R.legalName ? 'hit' : 'miss');
+  return R;
+}
+
+/* ══════════════════════════════════════════════════
+   SOURCE 7 — NCUA
+══════════════════════════════════════════════════ */
+async function fetchNCUA(q) {
+  setSrc('ncua','pinging');
+  const R = { legalName:null, address:null, city:null, state:null, charter:null };
+
+  const r = await proxyfetch(
+    `https://www.ncua.gov/api/CreditUnions?search=${enc(q)}&pageSize=3`
+  );
+
+  if (r.ok && r.data?.value?.length) {
+    const cu   = r.data.value[0];
+    R.legalName = cu.CU_NAME || cu.CharterName;
+    R.address   = cu.STREET;
+    R.city      = cu.CITY;
+    R.state     = cu.STATE;
+    R.charter   = cu.CharterTypeCode;
+  }
+
+  setSrc('ncua', R.legalName ? 'hit' : 'miss');
+  return R;
+}
+
+/* ══════════════════════════════════════════════════
+   SOURCE 8 — USASpending
+══════════════════════════════════════════════════ */
+async function fetchSpend(q) {
+  setSrc('spend','pinging');
+  const R = { name:null, total:null, url:null };
+
+  const r = await proxyfetch(
+    `https://api.usaspending.gov/api/v2/autocomplete/recipient/?search_text=${enc(q)}&limit=3`
+  );
+
+  if (r.ok && r.data?.results?.length) {
+    const rec = r.data.results[0];
+    R.name = rec.legal_business_name || rec.recipient_name;
+    if (rec.recipient_id) {
+      const r2 = await proxyfetch(
+        `https://api.usaspending.gov/api/v2/recipient/duns/${rec.recipient_id}/`
+      );
+      if (r2.ok && r2.data)
+        R.total = r2.data.total_transaction_obligated_amount;
+      R.url = `https://www.usaspending.gov/recipient/${rec.recipient_id}/latest`;
+    }
+  }
+
+  setSrc('spend', R.name ? 'hit' : 'miss');
+  return R;
+}
+
+/* ══════════════════════════════════════════════════
+   136-RULE ENGINE
+══════════════════════════════════════════════════ */
+function applyRules(query, edgar, oc, sam, pp, fdic, nppes, ncua, spend) {
+  const isPublic     = !!edgar.legalName;
+  const isNonprofit  = !!pp.legalName;
+  const isBank       = !!fdic.legalName;
+  const isHealthcare = !!nppes.legalName;
+  const isContractor = !!sam.legalName;
+  const isCreditUnion= !!ncua.legalName;
+
+  let entityClass = 'Private Company';
+  if (isPublic)      entityClass = 'Public Company (SEC Registrant)';
+  if (isNonprofit)   entityClass = `Nonprofit — 501(c)${pp.subsection ? '('+pp.subsection+')' : ''}`;
+  if (isBank)        entityClass = 'Bank / Financial Institution (FDIC)';
+  if (isCreditUnion) entityClass = 'Credit Union (NCUA)';
+  if (isHealthcare)  entityClass = 'Healthcare Organization (NPPES)';
+  if (isContractor && !isPublic) entityClass = 'Federal Contractor';
+
+  // ── V1: LEGAL NAME ───────────────────────────────────────
+  const legalName = edgar.legalName || oc.legalName || sam.legalName || pp.legalName ||
+                    fdic.legalName  || nppes.legalName || ncua.legalName || null;
+  const nameChanged = edgar.formerNames?.length > 0;
+
+  const V1 = {
+    value: legalName,
+    confidence: legalName ? (isPublic || isBank || isNonprofit ? 'H' : 'M') : 'N',
+    source: edgar.legalName   ? 'SEC EDGAR submissions.json → .name / 10-K cover "Exact name of registrant"'
+          : oc.legalName      ? 'OpenCorporates → company.name (State SOS)'
+          : sam.legalName     ? 'SAM.gov → entityRegistration.legalBusinessName'
+          : pp.legalName      ? 'ProPublica / IRS Form 990 Page 1 Header'
+          : fdic.legalName    ? 'FDIC BankFind → institutions.NAME'
+          : nppes.legalName   ? 'NPPES NPI Registry → basic.organization_name'
+          : ncua.legalName    ? 'NCUA → CU_NAME / CharterName' : null,
+    detail: {
+      'CIK (SEC)':       edgar.cik || '—',
+      'Former Name(s)':  nameChanged ? edgar.formerNames.map(f=>`${f.name} (until ${f.date})`).join('; ') : 'None on record',
+      'State of Incorp': edgar.state || oc.jurisdiction || '—',
+      'Ticker / Exchange': edgar.ticker ? `${edgar.ticker} (${edgar.exchange||'—'})` : '—',
+      'Entity Class':    entityClass,
+      'OpenCorp URL':    oc.url || '—',
+      'EDGAR URL':       edgar.url || '—',
+    },
+    flags: [
+      nameChanged ? `⚠ Formerly known as: ${edgar.formerNames[0]?.name} (Rule 2 — Name Change)` : null,
+      !legalName  ? '⚠ No legal name found in any public source' : null,
+    ].filter(Boolean),
+    rules: 'Rule 1 (Brand≠Legal) · Rule 2 (Name Change) · Rule 3 (Acquired) · Rule 8 (Subsidiary) · Rule 14 (Disambiguation)',
+  };
+
+  // ── V2: ANNUAL REVENUE ───────────────────────────────────
+  let rev=null, revSrc=null, revConf='N', revDetail={}, revFlags=[];
+
+  if (isPublic && edgar.cik) {
+    rev     = `Query XBRL API: data.sec.gov/api/xbrl/companyconcept/CIK${edgar.cik}/us-gaap/Revenues.json`;
+    revSrc  = 'SEC EDGAR XBRL → us-gaap:Revenues OR RevenueFromContractWithCustomerExcludingAssessedTax';
+    revConf = 'H';
+    revDetail = {
+      'XBRL Endpoint': `https://data.sec.gov/api/xbrl/companyconcept/CIK${edgar.cik}/us-gaap/Revenues.json`,
+      'Fallback Tag':  'RevenueFromContractWithCustomerExcludingAssessedTax',
+      'Document':      '10-K Part II Item 8 → Consolidated Income Statement',
+      'Audited':       'Yes — independent auditor (Exhibit 23)',
+      'Frequency':     'Annual (10-K) and Quarterly (10-Q)',
+    };
+    revFlags = ['Revenue data is directly retrievable from SEC XBRL API link above'];
+  } else if (isNonprofit && pp.totalRevenue) {
+    rev     = `$${Number(pp.totalRevenue).toLocaleString()} (FY ${pp.filingYear||'—'})`;
+    revSrc  = 'ProPublica / IRS Form 990 Part I Line 12 → totrevnue';
+    revConf = 'H';
+    revDetail = {
+      'Form':         'IRS Form 990 Part I Line 12 — Total revenue',
+      'Field':        'totrevnue (990) / totrevenue (990-EZ)',
+      'Fiscal Year':  pp.filingYear || '—',
+      'Program Rev':  'For commercial-equivalent: Part VIII Line 2 — Program service revenue',
+      'EIN':          pp.ein || '—',
+    };
+  } else if (isBank && fdic.assets) {
+    rev     = `Total assets: $${Number(fdic.assets).toLocaleString()}K (see FDIC Call Report for revenue)`;
+    revSrc  = 'FDIC Call Report Schedule RI → INTINC + NONII';
+    revConf = 'H';
+    revDetail = {
+      'Revenue Formula':  'Interest Income (INTINC) + Non-Interest Income (NONII)',
+      'FDIC Cert#':       fdic.cert || '—',
+      'FDIC API':         `https://banks.data.fdic.gov/api/financials?filters=CERT:${fdic.cert}&fields=INTINC,NONII`,
+      'Branches':         fdic.branches || '—',
+    };
+  } else if (isContractor && spend.total) {
+    rev     = `Federal contract awards: $${Number(spend.total).toLocaleString()} (floor estimate only)`;
+    revSrc  = 'USASpending.gov → total_transaction_obligated_amount';
+    revConf = 'M';
+    revDetail = {
+      'Type':    'Federal contract awards — NOT total company revenue',
+      'Note':    'This is a FLOOR estimate. Excludes all commercial and non-federal revenue.',
+      'URL':     spend.url || '—',
+    };
+    revFlags = ['⚠ Contract awards ≠ total revenue. Actual revenue will be higher. (Rule R8)'];
+  } else {
+    rev     = null;
+    revSrc  = null;
+    revConf = 'N';
+    revDetail = {
+      'Reason': 'Private entity — no mandatory revenue disclosure. IRS data is private under 26 U.S.C. §6103.',
+    };
+    revFlags = ['Revenue not publicly available for private entities (Rule R11/R12)'];
+  }
+
+  const V2 = { value: rev, confidence: revConf, source: revSrc,
+    detail: revDetail, flags: revFlags,
+    rules: 'Rule R1 (EDGAR XBRL) · R4 (Nonprofit 990) · R6 (Bank Call Report) · R8 (SAM floor) · R11 (Private unavailable)' };
+
+  // ── V3: PHYSICAL ADDRESS ─────────────────────────────────
+  const hq   = edgar.hqAddr || sam.physAddr ||
+               (isNonprofit ? [pp.address, pp.city, pp.state].filter(Boolean).join(', ') : null) ||
+               nppes.address || ncua.address || null;
+  const mail  = edgar.mailAddr || sam.mailAddr || null;
+  const reg   = oc.regAddr || null;
+  const regIsAgent = isAgent(reg);
+
+  const V3 = {
+    value: hq || reg || '—',
+    confidence: hq ? (isPublic ? 'H' : 'M') : reg ? 'M' : 'N',
+    source: edgar.hqAddr  ? 'SEC EDGAR submissions.json → addresses.business (10-K cover "Address of principal executive offices")'
+          : sam.physAddr  ? 'SAM.gov → coreData.physicalAddress (CAGE-verified)'
+          : (isNonprofit && pp.city) ? 'IRS Form 990 Page 1 → mailing address'
+          : nppes.address ? 'NPPES NPI → addresses[address_purpose=LOCATION]'
+          : ncua.address  ? 'NCUA → STREET / CITY / STATE'
+          : reg           ? 'OpenCorporates → registered_address_in_full' : null,
+    detail: {
+      'HQ / Principal':     hq || '—',
+      'Mailing Address':    mail || (mail===hq ? 'Same as HQ' : '—'),
+      'Registered Address': reg || '—',
+      'Reg. Agent Flag':    regIsAgent ? '⚠ This is a registered agent address — NOT the operating office' : 'Not a registered agent address',
+      'Branch Count':       fdic.branches ? `${fdic.branches} FDIC-insured offices` : '—',
+    },
+    flags: [
+      regIsAgent ? '⚠ Rule PA1: Registered address is a registered agent. Operating address may differ.' : null,
+      !hq && reg  ? '⚠ Rule PA14: Only registered address available — operating address not public' : null,
+    ].filter(Boolean),
+    rules: 'Rule PA1 (Reg. Agent) · PA2 (Latest filing) · PA9 (Branch count) · PA-N13 (High-density address) · PA-N4 (PO Box)',
+  };
+
+  // ── V4: TIN / EIN / BRN ──────────────────────────────────
+  const ein  = edgar.ein || (isNonprofit ? String(pp.ein||'') : null) || null;
+  const brn  = oc.companyNum || null;
+
+  const V4 = {
+    value: ein ? `EIN: ${ein}` : brn ? `BRN: ${brn} (${oc.jurisdiction||'US'})` : sam.uei ? `SAM UEI: ${sam.uei}` : '—',
+    confidence: ein ? 'H' : brn ? 'H' : sam.uei ? 'M' : 'N',
+    source: edgar.ein     ? 'SEC EDGAR submissions.json → .ein (10-K cover "IRS Employer Identification No.")'
+          : (isNonprofit && pp.ein) ? 'ProPublica / IRS Form 990 Page 1 → "Employer identification number"'
+          : sam.uei       ? 'SAM.gov → ueiSAM (EIN masked for privacy)'
+          : brn           ? 'OpenCorporates → company_number (State SOS)' : null,
+    detail: {
+      'EIN (Federal)':   ein  || (isPublic || isNonprofit ? '—' : 'Not publicly available — private entity (26 U.S.C. §6103)'),
+      'BRN (State SOS)': brn  ? `${brn} — State: ${oc.jurisdiction||'—'}` : '—',
+      'SAM.gov UEI':     sam.uei  || '—',
+      'NPI (Healthcare)':nppes.npi|| '—',
+      'FDIC Cert#':      fdic.cert|| '—',
+      'EIN Format':      ein  ? `Confirmed: XX-XXXXXXX` : '—',
+      'State BRN Note':  'BRN format varies: DE=7 digits, CA=C+7, TX=11 digits, FL=P+12, WA=UBI 9 digits',
+    },
+    flags: [
+      !ein && !isPublic && !isNonprofit ? '⚠ Rule ID14: Private company — EIN not in any free public source' : null,
+      !brn ? '⚠ BRN not found in OpenCorporates — may not be indexed or registered under this name' : null,
+    ].filter(Boolean),
+    rules: 'Rule ID11 (Public EIN) · ID12 (Nonprofit EIN) · ID15 (BRN) · ID-N5 (State format) · ID14 (Private)',
+  };
+
+  // ── V5: DBA NAME ─────────────────────────────────────────
+  const dbas = [...new Set([
+    sam.dbaName, pp.dbaName, ...(oc.altNames||[])
+  ].filter(Boolean))];
+
+  const V5 = {
+    value: dbas.length ? dbas.join(' · ') : (legalName && legalName.toLowerCase() !== query.toLowerCase() ? `Input "${query}" may be a trade name — legal name above` : 'None found in public sources'),
+    confidence: dbas.length ? (sam.dbaName || pp.dbaName ? 'H' : 'M') : 'N',
+    source: sam.dbaName   ? 'SAM.gov → entityRegistration.dbaName (government-verified)'
+          : pp.dbaName    ? 'ProPublica / IRS Form 990 Page 1 → "Doing Business As"'
+          : oc.altNames?.length ? 'OpenCorporates → alternative_names (State SOS)' : null,
+    detail: {
+      'All DBAs Found':   dbas.length ? dbas.join(', ') : 'None in any public source',
+      'SAM.gov DBA':      sam.dbaName  || '—',
+      'IRS Form 990 DBA': pp.dbaName   || '—',
+      'OC Alt Names':     oc.altNames?.join(', ') || '—',
+      'County Note':      'DBA registration is county-level in ~13 states — those records are NOT in this tool',
+      'States w/o State DBA Registry': 'AL, AK, AZ, DE, FL, HI, KS, MD, MS, NE, OH, WI, WY — check county clerk',
+    },
+    flags: [
+      !dbas.length ? '⚠ Rule DBA5: DBA may be registered at county level — not retrievable from state databases' : null,
+    ].filter(Boolean),
+    rules: 'Rule DBA1 (All DBAs) · DBA3 (Brand=DBA) · DBA8 (990 DBA) · DBA9 (SAM DBA) · DBA5 (County-level)',
+  };
+
+  // ── V6: LEGAL STRUCTURE ──────────────────────────────────
+  const compType = oc.companyType || sam.entityType || edgar.entityType || null;
+  const nl = (legalName||'').toLowerCase();
+  let inferred = null;
+  if      (/\bpllc\b/.test(nl))                         inferred = 'Professional LLC (PLLC)';
+  else if (/\bllc\b|l\.l\.c/.test(nl))                  inferred = 'Limited Liability Company (LLC)';
+  else if (/\bllp\b|l\.l\.p/.test(nl))                  inferred = 'Limited Liability Partnership (LLP)';
+  else if (/\blp\b|l\.p\.|limited partnership/.test(nl)) inferred = 'Limited Partnership (LP)';
+  else if (/\bpc\b|p\.c\./.test(nl))                    inferred = 'Professional Corporation (PC)';
+  else if (/\binc\b|incorporated/.test(nl))             inferred = 'Corporation (Inc.)';
+  else if (/\bcorp\b|corporation/.test(nl))             inferred = 'Corporation';
+  else if (/\bcoop\b|cooperative/.test(nl))             inferred = 'Cooperative';
+  else if (/\btrust\b/.test(nl))                        inferred = 'Trust';
+
+  const structVal = (isNonprofit ? `Nonprofit Corporation — 501(c)(${pp.subsection||'?'})` :
+                     isBank      ? `FDIC-Insured Institution${fdic.active===false?' (Inactive)':''}` :
+                     isCreditUnion ? `Federal Credit Union (NCUA Charter: ${ncua.charter||'—'})` :
+                     compType || inferred || null);
+
+  const V6 = {
+    value: structVal || '—',
+    confidence: compType ? 'H' : isNonprofit || isBank || isCreditUnion ? 'H' : inferred ? 'M' : 'N',
+    source: compType    ? 'OpenCorporates → company_type field (State SOS)'
+          : isNonprofit ? 'ProPublica / IRS Form 990 → subsection classification'
+          : isBank      ? 'FDIC BankFind → institution category'
+          : isCreditUnion ? 'NCUA → charter type'
+          : inferred    ? 'Inferred from legal name suffix (Rule LS1 — verify at state SOS)' : null,
+    detail: {
+      'State Legal Type':     compType || inferred || '—',
+      'IRS Tax Classification': isNonprofit ? `501(c)(${pp.subsection||'?'}) Exempt` : 'Not publicly available for private entities',
+      'Public / Private':     isPublic ? 'Public — SEC registered' : 'Private — no mandatory disclosure',
+      'State':                oc.jurisdiction || edgar.state || '—',
+      'Incorporation Date':   oc.incDate || '—',
+      'FDIC Active':          isBank ? String(fdic.active) : '—',
+    },
+    flags: [
+      inferred && !compType ? '⚠ Rule LS1: Structure inferred from name suffix only — verify at state SOS' : null,
+      !structVal ? '⚠ Rule LS2: Structure not confirmed — no state SOS record found' : null,
+    ].filter(Boolean),
+    rules: 'Rule LS1 (Suffix) · LS2 (LLC tax) · LS3 (Nonprofit) · LS6 (CU) · LS8 (REIT) · LS11 (Public/Private)',
+  };
+
+  // ── V7: INDUSTRY / SIC / NAICS ───────────────────────────
+  const sic      = edgar.sic || null;
+  const sicDesc  = edgar.sicDesc || null;
+  const naics    = sam.naicsCode || null;
+  const ntee     = pp.nteeCode || null;
+  const taxonomy = nppes.taxonomy || null;
+
+  let indVal = null;
+  if      (sic)      indVal = `SIC ${sic}${sicDesc?' — '+sicDesc:''}`;
+  else if (naics)    indVal = `NAICS ${naics}`;
+  else if (ntee)     indVal = `NTEE ${ntee} (Nonprofit classification)`;
+  else if (taxonomy) indVal = `NPI Taxonomy: ${taxonomy}`;
+
+  const V7 = {
+    value: indVal || '—',
+    confidence: sic || naics || ntee || taxonomy ? 'H' : 'N',
+    source: sic      ? 'SEC EDGAR submissions.json → .sic field (self-reported)'
+          : naics    ? 'SAM.gov → businessTypes.naicsCode (2022 NAICS)'
+          : ntee     ? 'ProPublica / IRS Form 990 → ntee_code'
+          : taxonomy ? 'NPPES NPI Registry → taxonomies[0].desc' : null,
+    detail: {
+      'SIC Code':       sic      || '—',
+      'SIC Description':sicDesc  || '—',
+      'NAICS Code':     naics    || (sic ? 'Derive via SIC→NAICS crosswalk at naics.com' : '—'),
+      'NAICS Version':  naics    ? '2022 NAICS (current)' : '—',
+      'NTEE Code':      ntee     || '—',
+      'NPI Taxonomy':   taxonomy || '—',
+      'SIC Caveat':     sic ? '⚠ SIC is self-reported to SEC. Last revised 1987 — may not reflect modern business model.' : '—',
+      'NAICS Crosswalk':sic && !naics ? 'https://www.naics.com/sic-naics-crosswalk/' : '—',
+    },
+    flags: [
+      sic && !naics  ? '⚠ Rule IND8: NAICS not directly available — use SIC crosswalk' : null,
+      !sic && !naics && !ntee ? '⚠ Rule IND9: Private company — industry code not in free public sources' : null,
+      isNonprofit && ntee ? '⚠ Rule IND3: Nonprofits use NTEE codes. SIC/NAICS approximation needed for comparability.' : null,
+    ].filter(Boolean),
+    rules: 'Rule IND1 (Primary) · IND2 (Self-reported SIC) · IND3 (NTEE) · IND8 (Crosswalk) · IND9 (Private)',
+  };
+
+  return { V1, V2, V3, V4, V5, V6, V7, entityClass, isPublic, isNonprofit, isBank };
+}
+
+/* ══════════════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════════════ */
+function render(query, results) {
+  const { V1,V2,V3,V4,V5,V6,V7,entityClass,isPublic,isNonprofit,isBank } = results;
+  const vars = [
+    { n:'01', label:'Legal Name',            d: V1 },
+    { n:'02', label:'Annual Revenue',         d: V2 },
+    { n:'03', label:'Physical Address',       d: V3 },
+    { n:'04', label:'TIN / EIN / BRN',        d: V4 },
+    { n:'05', label:'DBA — Doing Business As',d: V5 },
+    { n:'06', label:'Legal Structure',         d: V6 },
+    { n:'07', label:'SIC / NAICS / Industry', d: V7 },
+  ];
+
+  let html = '';
+  vars.forEach((v, i) => {
+    const { d } = v;
+    const val     = d.value || '—';
+    const isEmpty = !d.value || val === '—';
+    const confMap = { H:'HIGH', M:'MED', N:'N/A' };
+    const did = `dt-${v.n}`;
+    const cid = `ch-${v.n}`;
+
+    let rows = '';
+    if (d.detail) {
+      Object.entries(d.detail).forEach(([k,v2]) => {
+        if (!v2 || v2==='—') return;
+        rows += `<div class="dr"><div class="dl">${esc(k)}</div><div class="dv">${esc(v2)}</div></div>`;
+      });
+    }
+    if (d.source) {
+      rows += `<div class="dr"><div class="dl">Source</div><div class="dv"><span class="tag tag-green">✓ ${esc(d.source)}</span></div></div>`;
+    }
+    if (d.flags?.length) {
+      d.flags.forEach(f => {
+        if (f) rows += `<div class="dr"><div class="dl">Flag</div><div class="dv"><span class="tag tag-amber">${esc(f)}</span></div></div>`;
+      });
+    }
+    if (d.rules) {
+      rows += `<div class="rules-row">Rules applied: ${esc(d.rules)}</div>`;
+    }
+
+    html += `
+      <div class="vc" style="animation-delay:${i*0.055}s">
+        <div class="vc-head" onclick="tog('${did}','${cid}')">
+          <span class="vc-num">${v.n}</span>
+          <span class="vc-lbl">${esc(v.label)}</span>
+          <span class="vc-val ${isEmpty?'empty':''}">${esc(val)}</span>
+          <span class="conf conf-${d.confidence}">${confMap[d.confidence]||'—'}</span>
+          <span class="chev" id="${cid}">▼</span>
+        </div>
+        <div class="vc-detail" id="${did}">${rows||'<div class="dr"><div class="dl">Status</div><div class="dv">No detail available</div></div>'}</div>
+      </div>`;
+  });
+
+  _('grid').innerHTML = html;
+
+  // Summary
+  const filled = [V1,V2,V3,V4,V5,V6,V7].filter(v => v.value && v.value!=='—' && v.confidence!=='N').length;
+  _('sname').textContent   = V1.value || query;
+  _('stype').textContent   = entityClass;
+  _('sstatus').textContent = isPublic?'Public':isNonprofit?'Nonprofit':isBank?'FDIC Bank':'Private';
+  _('ssrc').textContent    = [
+    edgar_last?.legalName  ?'EDGAR':null,
+    oc_last?.legalName     ?'OpenCorp':null,
+    sam_last?.legalName    ?'SAM.gov':null,
+    pp_last?.legalName     ?'ProPublica':null,
+    fdic_last?.legalName   ?'FDIC':null,
+    nppes_last?.legalName  ?'NPPES':null,
+    ncua_last?.legalName   ?'NCUA':null,
+  ].filter(Boolean).join(' · ') || '—';
+  _('scov').textContent = `${Math.round((filled/7)*100)}% (${filled}/7 variables)`;
+
+  _('summary').classList.add('on');
+  _('export-bar').classList.add('on');
+
+  lastResult = { query, V1,V2,V3,V4,V5,V6,V7, entityClass };
+}
+
+function tog(did, cid) {
+  const d = _(did), c = _(cid);
+  if (!d||!c) return;
+  const open = d.classList.contains('open');
+  d.classList.toggle('open', !open);
+  c.classList.toggle('open', !open);
+}
+
+// Module-level last-fetch cache for summary
+let edgar_last={}, oc_last={}, sam_last={}, pp_last={}, fdic_last={}, nppes_last={}, ncua_last={};
+
+/* ══════════════════════════════════════════════════
+   MAIN SEARCH
+══════════════════════════════════════════════════ */
+async function run() {
+  const q = _('q').value.trim();
+  if (!q) return;
+  if (searches >= CFG.MAX_SEARCHES) {
+    setStatus(`Session limit (${CFG.MAX_SEARCHES}) reached. Reload to start new session.`);
+    return;
+  }
+  searches++;
+  tick();
+
+  _('gobtn').disabled = true;
+  _('gobtn').textContent = 'Searching…';
+  _('summary').classList.remove('on');
+  _('export-bar').classList.remove('on');
+  _('grid').innerHTML = `<div id="idle" style="grid-column:1/-1">
+    <div class="idle-q" style="font-size:1rem;color:var(--gold)">Querying 8 sources in parallel…</div>
+    <div class="idle-s">Routing through CORS proxy · Please wait</div></div>`;
+
+  ['edgar','oc','sam','pp','fdic','nppes','ncua','spend'].forEach(s => setSrc(s,''));
+  setStatus(`Querying all sources for "${q}"…`, 'live');
+
+  try {
+    const [edgar, oc, sam, pp, fdic, nppes, ncua, spend] = await Promise.all([
+      fetchEDGAR(q), fetchOC(q), fetchSAM(q), fetchPP(q),
+      fetchFDIC(q),  fetchNPPES(q), fetchNCUA(q), fetchSpend(q),
+    ]);
+
+    // Cache for summary
+    edgar_last=edgar; oc_last=oc; sam_last=sam; pp_last=pp;
+    fdic_last=fdic; nppes_last=nppes; ncua_last=ncua;
+
+    const derived = applyRules(q, edgar, oc, sam, pp, fdic, nppes, ncua, spend);
+    const hits = [edgar,oc,sam,pp,fdic,nppes,ncua].filter(s=>s.legalName).length;
+
+    setStatus(`Complete — ${hits} source(s) returned data for "${q}". ${derived.entityClass}.`, 'done');
+    render(q, derived);
+
+  } catch(e) {
+    setStatus(`Error: ${e.message}. Check console for details.`);
+    _('grid').innerHTML = `<div id="idle" style="grid-column:1/-1">
+      <div class="idle-q" style="font-size:0.9rem;color:var(--red)">Search error. Try again or check your connection.</div></div>`;
+  }
+
+  _('gobtn').disabled = false;
+  _('gobtn').textContent = 'Run Intelligence →';
+}
+
+/* ══════════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════════ */
+function expJSON() {
+  if (!lastResult) return;
+  const vars = {V1:'legalName',V2:'revenue',V3:'address',V4:'identifiers',V5:'dba',V6:'structure',V7:'industry'};
+  const out = {
+    query: lastResult.query,
+    entityClass: lastResult.entityClass,
+    timestamp: new Date().toISOString(),
+    variables: {}
+  };
+  ['V1','V2','V3','V4','V5','V6','V7'].forEach(k => {
+    const d = lastResult[k];
+    out.variables[vars[k]] = { value: d?.value, confidence: d?.confidence, source: d?.source };
+  });
+  dl(new Blob([JSON.stringify(out,null,2)],{type:'application/json'}), `entityiq-${lastResult.query.replace(/\s+/g,'-')}.json`);
+}
+
+function expCSV() {
+  if (!lastResult) return;
+  const lbls = { V1:'Legal Name',V2:'Annual Revenue',V3:'Physical Address',V4:'TIN/EIN/BRN',V5:'DBA Name',V6:'Legal Structure',V7:'Industry/SIC/NAICS' };
+  const rows = [['Variable','Value','Confidence','Source']];
+  ['V1','V2','V3','V4','V5','V6','V7'].forEach(k => {
+    const d = lastResult[k];
+    rows.push([lbls[k], d?.value||'', d?.confidence||'', d?.source||'']);
+  });
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  dl(new Blob([csv],{type:'text/csv'}), `entityiq-${lastResult.query.replace(/\s+/g,'-')}.csv`);
+}
+
+function expTXT() {
+  if (!lastResult) return;
+  const lbls = { V1:'LEGAL NAME',V2:'ANNUAL REVENUE',V3:'PHYSICAL ADDRESS',V4:'TIN/EIN/BRN',V5:'DBA NAME',V6:'LEGAL STRUCTURE',V7:'INDUSTRY/SIC/NAICS' };
+  let t = `ENTITYIQ INTELLIGENCE REPORT\n${'='.repeat(52)}\n`;
+  t += `Query:        ${lastResult.query}\n`;
+  t += `Entity Class: ${lastResult.entityClass}\n`;
+  t += `Generated:    ${new Date().toLocaleString()}\n`;
+  t += `${'─'.repeat(52)}\n\n`;
+  ['V1','V2','V3','V4','V5','V6','V7'].forEach(k => {
+    const d = lastResult[k];
+    t += `${lbls[k]}\n`;
+    t += `  Value:      ${d?.value||'Not available'}\n`;
+    t += `  Confidence: ${{H:'HIGH',M:'MEDIUM',N:'N/A'}[d?.confidence]||'—'}\n`;
+    t += `  Source:     ${d?.source||'—'}\n`;
+    if (d?.flags?.length) t += `  Flags:      ${d.flags.join(' | ')}\n`;
+    t += '\n';
+  });
+  dl(new Blob([t],{type:'text/plain'}), `entityiq-${lastResult.query.replace(/\s+/g,'-')}.txt`);
+}
+
+function dl(blob, name) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+}
+</script>
+</body>
+</html>
